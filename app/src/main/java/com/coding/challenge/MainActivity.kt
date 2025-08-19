@@ -46,8 +46,6 @@ private fun MainScreen() {
         val films by rememberSaveable { mutableStateOf(emptyList<Film>()) }
 
         LaunchedEffect(key1 = true, block = {
-            // Force candidate to handle coroutine context properly
-            // Add blocking call on main thread
             val response = runBlocking {
                 NetworkHelper().createRetrofit().create(GhibliFilmsService::class.java).films()
             }
