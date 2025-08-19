@@ -54,8 +54,6 @@ private fun MainScreen() {
     }
 }
 
-// ===== FILMS LIST COMPOSABLES =====
-
 @Composable
 fun FilmsList(list: List<Film>, listState: LazyListState, onClick: () -> Unit = {}) {
     LazyColumn(Modifier.fillMaxWidth(), listState) {
