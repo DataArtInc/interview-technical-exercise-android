@@ -46,9 +46,11 @@ private fun MainScreen() {
         val films by rememberSaveable { mutableStateOf(emptyList<Film>()) }
 
         LaunchedEffect(key1 = true, block = {
-            val response = runBlocking {
-                NetworkHelper().createRetrofit().create(GhibliFilmsService::class.java).films()
-            }
+            films.toMutableList().addAll(
+                runBlocking {
+                    NetworkHelper().createRetrofit().create(GhibliFilmsService::class.java).films()
+                }
+            )
         })
         FilmsList(films, listState)
     }
