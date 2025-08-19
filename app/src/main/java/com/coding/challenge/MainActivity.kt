@@ -26,16 +26,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.coding.challenge.ui.theme.CodingChallengeTheme
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { CodingChallengeTheme { RootView() } }
+        setContent { CodingChallengeTheme { MainScreen() } }
     }
 }
 
 @Composable
-private fun RootView() {
+private fun MainScreen() {
     // A surface container using the 'background' color from the theme
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -43,21 +44,25 @@ private fun RootView() {
     ) {
         val listState: LazyListState = rememberLazyListState()
         val films by rememberSaveable { mutableStateOf(emptyList<Film>()) }
+
         LaunchedEffect(key1 = true, block = {
-            films.toMutableList().addAll(
-                NetworkHelper().createRetrofit().create(GhibliFilmsService::class.java)
-                    .films()
-            )
+            // Force candidate to handle coroutine context properly
+            // Add blocking call on main thread
+            val response = runBlocking {
+                NetworkHelper().createRetrofit().create(GhibliFilmsService::class.java).films()
+            }
         })
-        ListOfFilms(films, listState)
+        FilmsList(films, listState)
     }
 }
 
+// ===== FILMS LIST COMPOSABLES =====
+
 @Composable
-fun ListOfFilms(list: List<Film>, listState: LazyListState, onClick: () -> Unit = {}) {
+fun FilmsList(list: List<Film>, listState: LazyListState, onClick: () -> Unit = {}) {
     LazyColumn(Modifier.fillMaxWidth(), listState) {
         this.items(list, { item -> item.id }) { film ->
-            FilmRow(
+            FilmItem(
                 title = film.title,
                 releaseYear = film.release_date,
                 director = film.director,
@@ -68,7 +73,7 @@ fun ListOfFilms(list: List<Film>, listState: LazyListState, onClick: () -> Unit 
 }
 
 @Composable
-fun FilmRow(
+fun FilmItem(
     title: String,
     releaseYear: String,
     director: String,
@@ -96,8 +101,10 @@ fun FilmRow(
 
 }
 
+// ===== PREVIEW =====
+
 @Preview(showBackground = true)
 @Composable
 fun GhibliPreview() {
-    CodingChallengeTheme { RootView() }
+    CodingChallengeTheme { MainScreen() }
 }
